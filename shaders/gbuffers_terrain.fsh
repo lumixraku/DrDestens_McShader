@@ -34,6 +34,10 @@ in vec2 lmcoord;
 in vec2 coord;
 in vec4 glcolor;
 
+// 注释中的 DRAW Buffers + 数字 是 optifine 中的特别能力 详情可见 optifine 中 COLOR Attachments
+// 是为了给 shader 和 shader 之间通信的东东
+
+
 #ifdef PHYSICALLY_BASED
 /* DRAWBUFFERS:0231 */
 #else

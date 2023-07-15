@@ -65,6 +65,8 @@ uniform float lightBrightness;
 
 vec2 coord = gl_FragCoord.xy * screenSizeInverse;
 
+// 水的透光程度 值越大，水吸收的光越多，水下就感觉更暗
+// 值太小，水看起来就透明了没有了颜色，水面上看不出湖水的感觉
 const vec3 waterAbsorptionColor = vec3(WATER_ABSORPTION_COLOR_DAY_R, WATER_ABSORPTION_COLOR_DAY_G, WATER_ABSORPTION_COLOR_DAY_B) * water_absorption_color_mult;
 
 struct position { // A struct for holding positions in different spaces
@@ -220,18 +222,20 @@ void main() {
     
     #ifdef WATER_EFFECTS
     #ifdef REFRACTION
+    
+    // 控制折射
     if (id == 10) {   // REFRACTION <SEE THROUGH> /////////////////////////////////////////////////////////////
 
-        vec2 noiseCoord = vec2((coord.x - 0.5) * aspectRatio, coord.y - 0.5);
-        vec2 distort    = vec2( sin( noise(noiseCoord * 3 * linearDepth) * TWO_PI + (frameTimeCounter * 2)) * (0.02 * REFRACTION_AMOUNT) );
-        coord += distort / linearDepth;
+        //vec2 noiseCoord = vec2((coord.x - 0.5) * aspectRatio, coord.y - 0.5);
+        //vec2 distort    = vec2( sin( noise(noiseCoord * 3 * linearDepth) * TWO_PI + (frameTimeCounter * 2)) * (0.02 * REFRACTION_AMOUNT) );
+        //coord += distort / linearDepth;
 
     }
     if (isEyeInWater != 0) {   // REFRACTION <IN MEDIUM> /////////////////////////////////////////////////////////////
-
+        // 沉入水中视角
         vec2 noiseCoord = vec2((coord.x - 0.5) * aspectRatio, coord.y - 0.5);
         vec2 distort    = vec2( sin( noise(noiseCoord * 10) * TWO_PI + (frameTimeCounter * 2)) * (0.005 * REFRACTION_AMOUNT) );
-        coord += distort;
+        coord += distort; 
 
     }
     #endif
@@ -248,16 +252,18 @@ void main() {
     vec3  color = getAlbedo(coord);
 
     if (id == 10 || (id == 53 && depth != 1)) {
-
+        
+        
         // ABSORPTION <SEE THROUGH> /////////////////////////////////////////////////////////////
         if (isEyeInWater == 0) {
-
+            // 1 = camera is in water, 2 = camera is in lava, 3 = camera is in powder snow
+            // 这里是岸上看水的颜色
             float transparentDepth       = texture(depthtex1, coord).r;
             float transparentLinearDepth = min( linearizeDepthf(transparentDepth, nearInverse), 1e5);
 
             float absorption = exp(-abs(transparentLinearDepth - linearDepth) * WATER_ABSORPTION_DENSITY - (WATER_ABSORPTION_DENSITY * WATER_ABSORPTION_BIAS));
 
-            vec3  waterColor = waterAbsorptionColor * (eyeBrightnessSmooth.y * (.9/140) + .01) * getSky(0.5);
+            vec3  waterColor = vec3(0.1, 0.6, 0.1);// waterAbsorptionColor * (eyeBrightnessSmooth.y * (.9/140) + .01) * getSky(0.5);
             color = mix(waterColor, color, absorption);
 
         }
@@ -333,7 +339,7 @@ void main() {
     if (isEyeInWater == 1) {
 
         float absorption = exp(-linearDepth * (0.2 * WATER_ABSORPTION_DENSITY));
-        vec3  waterColor = waterAbsorptionColor * (eyeBrightnessSmooth.y * (.9/140) + .01) * gamma(fogColor);
+        vec3  waterColor = vec3(0.1, 0.5, 0.1) * (eyeBrightnessSmooth.y * (.9/140) + .01);
         color            = mix(waterColor, color, absorption);
 
     } else if (isEyeInWater == 2) {

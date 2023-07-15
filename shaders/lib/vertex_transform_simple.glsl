@@ -17,6 +17,7 @@ vec2 getLmCoord() { // Intel Version (Less Optimised)
 }
 #endif
 
+// TBN矩阵是切线空间和其他空间的转换矩阵  tangentAttribute 来自于 optfine 的 at_tangent
 mat3 getTBN(vec4 tangentAttribute) {
 	vec3 normal   = normalize(gl_NormalMatrix * gl_Normal);
     vec3 tangent  = normalize(gl_NormalMatrix * (tangentAttribute.xyz / tangentAttribute.w));
@@ -40,6 +41,8 @@ vec4 viewToClip(vec4 viewPos) {
 int getID(vec4 entityAttribute) {
     return int(entityAttribute.x) - 1000;
 }
+
+// 和 block.properties 有关   block.properties 定义的 blockID 都是 1000+ 的值
 int getID(int entityId) {
     return entityId - 1000;
 }

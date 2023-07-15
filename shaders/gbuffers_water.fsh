@@ -19,7 +19,7 @@ uniform float frameTimeCounter;
 // tbn[1] = binomial vector
 // tbn[2] = normal vector
 
-flat in int blockId;
+flat in int blockId; // from gbuffer_water.vsh
 in vec3 worldPos;
 in vec3 viewDir;
 in vec2 lmcoord;
@@ -67,6 +67,8 @@ vec2 worley(vec2 coord, float size, int complexity, float time) {
 
     return vec2(md1, md2);
 }
+
+// voronoi 图，像细胞一样
 float voronoi(vec2 coord, float size, int complexity, float time) {
     vec2 uv  = coord;
     
@@ -145,18 +147,20 @@ vec3 waveNormals(vec2 coord, float strength) {
 #endif
 #endif
 
+/* 暂时不明上面的意义，没看到使用方，但是去掉就看不到水的存在了  改变数字顺序也看不到了   */
+/* 但是 0231 改成 023 看起来无变化  02 就看不到水了  021 的话水看起来完全透明没有水面反射了 */
+/* 其他和水相关的部分在 composite2.fsh 中  */
+
+
 void main(){
     vec3  surfaceNormal  = tbn[2];
-	vec4  color          = texture2D(texture, coord, 0) * vec4(glcolor.rgb, 1);
-
-    #ifdef PHYSICALLY_BASED
-    float reflectiveness, roughness = 0;
-    #endif
+	vec4  color          = texture2D(texture, coord, 0) * vec4(glcolor.rgb, 1); // 不知道用途
 
     // Reduce opacity and saturation of only water
     if (blockId == 10) {
 
         #ifdef WATER_TEXTURE_VISIBLE
+         // 有了 ifdef 控制面板中才有 WATER_TEXTURE_VISIBLE 配置项
          color.rgb = sq(color.rgb * getLightmap(lmcoord).rgb) * 0.75;
         #else
 
@@ -178,46 +182,15 @@ void main(){
 
         #endif
 
-    } else {
-
-        #ifdef PHYSICALLY_BASED
-
-		    // Get the Dafault render color, used for PBR Blending
-            vec3 mc_color = gamma(color.rgb * glcolor.a * ( getLightmap(lmcoord).rgb + DynamicLight(lmcoord) ));
-            color.rgb     = gamma(color.rgb);
-
-            vec3 ambientLight  = getLightmap(lmcoord).rgb;
-
-		    MaterialInfo MatTex = FullMaterial(coord, color);
-            MatTex.AO 		   *= sq(glcolor.a);
-
-            PBRout Material    = PBRMaterial(MatTex, mc_color, lmcoord, tbn, viewDir, 0.1 * ambientLight + DynamicLight(lmcoord));
-
-            color	           = Material.color;
-            surfaceNormal      = Material.normal;
-            
-            reflectiveness = luminance(MatTex.f0);
-            roughness      = MatTex.roughness;
-
-        #else
-
-            #ifdef WHITE_WORLD
-            color.rgb = vec3(1);
-            #endif
-
-	        color.rgb         *= glcolor.a;
-            color.rgb         *= getLightmap(lmcoord).rgb + DynamicLight(lmcoord);
-            color.rgb  = gamma(color.rgb);
-
-        #endif
-
     }
 
-    
-    gl_FragData[0] = color; // Color
-    gl_FragData[1] = vec4(surfaceNormal, 1); // Normal
+
+    gl_FragData[0] = color; // Color  // 意义不明 注释了后看不出区别
+    gl_FragData[1] = vec4(surfaceNormal, 1); // Normal  // 注释后水就坏了，像泥巴一样
+
+    // 关键作用，注释了这个水看起来就没有了，
     gl_FragData[2] = vec4(codeID(blockId), vec3(1)); // Type (colortex3)
     #ifdef PHYSICALLY_BASED
-    gl_FragData[3] = vec4(reflectiveness, vec3(1));
+    gl_FragData[3] = vec4(reflectiveness, vec3(1)); // 从命名看反光，但是注释后还是有镜面反射
     #endif
 }

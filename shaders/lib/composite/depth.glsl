@@ -1,4 +1,4 @@
-uniform sampler2D depthtex0; // Depth Buffer
+uniform sampler2D depthtex0; // Depth Buffer //来自 optfine
 
 float getDepth(in vec2 coord) {
     return texture(depthtex0, coord).x;

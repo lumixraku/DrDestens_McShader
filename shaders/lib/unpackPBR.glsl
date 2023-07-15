@@ -51,6 +51,7 @@ const vec3 metalsF0[8] = vec3[8](
 );
 
 // NORMAL TEXTURE
+// nTex 来自 extractNormal(NT, ST),  NT 来自  texture2D(normals, coord);  normals 来自 optfine 中的 uniform normals
 vec3 extractNormal(vec4 nTex, vec4 sTex) {
     vec2 n = nTex.xy * 2 - 1;
     return vec3(n, sqrt(1.0 - dot(n, n)));

@@ -10,7 +10,7 @@
 
 uniform float frameTimeCounter;
 
-attribute vec4 mc_Entity;
+attribute vec4 mc_Entity; // from block.properties
 attribute vec4 at_tangent;
 
 #ifdef OPTIMIZE_INTERPOLATION
@@ -35,7 +35,7 @@ void main(){
 
 	#ifdef WATER_WAVES
 
-		if (mc_Entity.x == 1010) {
+		if (mc_Entity.x == 1010) {  //  from block.properties 1010 means water
 
 			float flowHeight = fract(worldPos.y + 0.01);
 

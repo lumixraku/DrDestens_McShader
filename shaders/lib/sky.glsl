@@ -93,6 +93,7 @@ vec3 getSky(float viewHeight) {
 
 }
 
+// 1 = camera is in water, 2 = camera is in lava, 3 = camera is in powder snow
 vec3 getFog(vec3 playerEyePos) {
     if (isEyeInWater == 0)      return getSky(playerEyePos);
     else if (isEyeInWater == 1) return pow(fogColor * 0.25, vec3(GAMMA));

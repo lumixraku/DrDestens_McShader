@@ -11,6 +11,8 @@ float NDF_GGX(float NdotH, float alpha) {
     return a2 / nenner;
 }
 
+// https://zhuanlan.zhihu.com/p/372110183
+// Schlick PBR 的一种近似方法
 float GO_SchlickGGX(float dot_product, float k) {
 	return dot_product / (dot_product * (1-k) + k);
 }
